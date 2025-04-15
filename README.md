@@ -1,0 +1,180 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# trdizinR
+
+<!-- badges: start -->
+
+<!-- badges: end -->
+
+The **trdizinR** package provides a convenient R interface to access the
+[TR Dizin](https://trdizin.gov.tr/) API. It allows users to
+programmatically search and retrieve metadata on academic
+**publications**, **authors**, **journals**, and **institutions**
+indexed by TR Dizin.
+
+## Installation
+
+``` r
+# Install from GitHub
+remotes::install_github("emraher/trdizinR")
+```
+
+## API Overview
+
+TR Dizin provides access to the following data:
+
+- **Publications**
+- **Journals**
+- **Authors**
+- **Institutions**
+
+This package wraps the relevant endpoints and parses the JSON responses
+into R-readable list objects.
+
+## Functions
+
+| Function                   | Description                            |
+|----------------------------|----------------------------------------|
+| `search_publication()`     | Search publications                    |
+| `search_journal()`         | Search journals                        |
+| `search_author()`          | Search authors                         |
+| `search_institution()`     | Search institutions                    |
+| `get_publication_detail()` | Get details for a specific publication |
+| `get_journal_detail()`     | Get details for a specific journal     |
+| `get_author_detail()`      | Get details for a specific author      |
+| `get_institution_detail()` | Get details for a specific institution |
+
+## Usage
+
+``` r
+library(trdizinR)
+
+# Search for publications
+result <- search_publication("cancer")
+
+# Search for journals
+result_journal <- search_journal("cancer")
+
+# Search for authors
+result_author <- search_author("Civcir")
+
+# Search for institutions
+result_institution <- search_institution("University")
+
+# Get details of a publication
+res <- search_publication("medicine", limit = 1)
+publication_id <- res$hits$hits$`_id`[1]
+publication_detail <- get_publication_detail(publication_id)
+
+
+# Get details of a journal
+res <- search_journal("medicine", limit = 1)
+journal_id <- res$hits$hits$`_id`[1]
+journal_detail <- get_journal_detail(journal_id)
+
+
+# Get details of an author
+res <- search_author("Sunay Çelik", limit = 1)
+author_id <- res$hits$hits$`_id`[1]
+author_detail <- get_author_detail(author_id)
+
+
+# Get details of an institution
+res <- search_institution("mudanya", limit = 1)
+inst_id <- res$hits$hits$`_source`$codes[1]
+inst_detail <- get_institution_detail(inst_id)
+```
+
+## Faceted Search Support
+
+All `search_*()` functions in the `trdizinR` package (e.g.,
+`search_publication()`, `search_journal()`, `search_author()`,
+`search_institution()`) support **faceted filtering** through additional
+named arguments using the `...` ellipsis operator.
+
+### What Are Facets?
+
+**Facets** are filters that narrow search results by specific metadata
+fields. They correspond to fields like year, institution type, country,
+author ORCID, and more—depending on the type of entity being searched.
+
+These facets align with the [TRDizin API
+documentation](https://development.trdizin.gov.tr/#tanml-kok-adresleri),
+which describes how to apply these filters to the base query.
+
+### Example Usage
+
+``` r
+# Search publications related to cancer, published in 2020
+res <- search_publication("cancer", facet_publication_year = 2020)
+
+# Search journals with a specific year filter
+res <- search_journal("education", facet_year = 2023)
+
+# Search institutions filtered by country
+res <- search_institution("University", facet_country = "Türkiye")
+
+# Search authors filtered by minimum publication count
+res <- search_author("Civcir", facet_minPublicationCount = 10)
+```
+
+### Supported Facets
+
+This section provides a comprehensive list of supported facet parameters
+for the TR Dizin API, organized by entity type. These facets can be used
+to filter search results in `trdizinR` package functions.
+
+#### Publication Facets
+
+| Facet Parameter | Description | Example Values |
+|----|----|----|
+| `facet_documentType` | Filters by document type | `PAPER`, `PROJECT` |
+| `facet_database` | Filters by database type | `SOCIAL`, `SCIENCE` |
+| `facet_accessType` | Filters by access type | `OPEN`, `CLOSE` |
+| `facet_authorName` | Filters by author name | `Ali Yıldız`, `Sunay Çelik` |
+| `facet_publication_year` | Filters by publication year | `2020`, `2021` |
+| `facet_publicationLanguage` | Filters by publication language | `ENG`, `TUR`, `GER`, `FRE`, `ARA`, `OTH`, `RUS`, `ITA`, `SPA` |
+| `facet_journalName` | Filters by journal name | `Milli Eğitim`, `Medicine Science` |
+| `facet_publicationType` | Filters by publication type | `RESEARCH`, `COMPILATION`, `FACT_PRESENTATION`, `OTHER`, `BOOK_PRESENTATION`, `CORRECTION`, `EDITORIAL`, `LETTER`, `LETTER_TO_EDITOR`, `MEETING_SUMMARY`, `REPORT`, `SHORT_REPORT`, `TRANSLATION`, `RETRACTED` |
+| `facet_projectGroup` | Filters by project group | `TÜBİTAK ÇAG Proje` |
+| `facet_facetauthorInstitution` | Filters by author’s institution | `T.C. MİLLİ EĞİTİM BAKANLIĞI` |
+| `facet_facetauthorCountry` | Filters by author’s country | `Türkiye`, `İtalya` |
+| `facet_facetauthorCity` | Filters by author’s city | `ANKARA`, `KONYA` |
+| `facet_subject` | Filters by subject area | `Fen > Temel Bilimler > Biyoloji`, `Sosyal > Sosyal > Psikoloji` |
+
+#### Journal Facets
+
+| Facet Parameter | Description | Example Values |
+|----|----|----|
+| `facet_year` | Filters by year | `2020`, `2021` |
+| `facet_publicationLanguage` | Filters by publication language | `ENG`, `TUR`, `GER`, `FRE`, `ARA`, `OTH`, `RUS`, `ITA`, `SPA` |
+| `facet_subject` | Filters by subject area | `Fen > Temel Bilimler > Biyoloji`, `Sosyal > Sosyal > Psikoloji` |
+| `facet_authorStatus` | Filters by author status | `REAL`, `POOL` |
+
+#### Author Facets
+
+| Facet Parameter | Description | Example Values |
+|----|----|----|
+| `facet_orcid` | Filters by ORCID | `0000-0002-1825-0097` |
+| `facet_minPublicationCount` | Filters by minimum publication count | `10`, `20` |
+
+#### Institution Facets
+
+| Facet Parameter | Description | Example Values |
+|----|----|----|
+| `facet_type` | Filters by institution type | `DEVLETUNIVERSITE`, `VAKIFUNIVERSITE`, `KAMUKURULUS`, `DIGER`, `KURUMKURULUS`, `ASKERI`, `VOD` |
+| `facet_status` | Filters by institution status | `OZEL`, `KAMU`, `DIGER`, `YABANCI`, `STK` |
+| `facet_country` | Filters by country | `Türkiye`, `Brezilya` |
+
+## Notes
+
+- All functions use `httr` and `jsonlite` to make and parse API calls.
+- Additional facet filters can be passed using the `...` argument in the
+  search functions.
+- When using these facets with `search_*()` functions in R, pass them as
+  named arguments with the required `facet_` prefix.
+
+## License
+
+MIT © [Emrah Er](https://github.com/emraher)
